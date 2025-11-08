@@ -1,0 +1,5 @@
+hf_xet  # Recommended UserWarning
+sacremoses  # Recommended UserWarning
+sentencepiece
+torch
+transformers
