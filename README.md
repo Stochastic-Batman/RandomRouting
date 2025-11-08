@@ -1,6 +1,8 @@
 # RandomRouting
 
-Ozurgeti Hackathon 2025 Project
+A marketplace linking organic and bio-food farmers with restaurants, hotels, and food producers for wholesale, bulk purchases.
+
+Ozurgeti Hackathon 2025 (Hackathon: ტექნოლოგიები მცირე ბიზნესისთვის) Project.
 
 ## Setup
 
