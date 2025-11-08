@@ -8,13 +8,9 @@ def create_models(lang_hotel: str = "ka", lang_guest: str = "en") -> Union[tuple
     if (lang_hotel, lang_guest) not in supported_language_pairs:
         return "<unsupported_language_pair>"
 
-    if lang_guest == "ka":  # for translation to Georgian, only English to Georgian model exists
-        lang_hotel = "synthetic-en"  # and only that model name contains "synthetic": opus-mt-synthetic-en-ka
-    elif lang_hotel == "ka":  # same
-        lang_guest = "synthetic-en"
-
-    model_name_h2g = f"Helsinki-NLP/opus-mt-{lang_hotel}-{lang_guest}"
-    model_name_g2h = f"Helsinki-NLP/opus-mt-{lang_guest}-{lang_hotel}"
+    # for translation to Georgian, only English to Georgian model exists and only that model name contains "synthetic": opus-mt-synthetic-en-ka
+    model_name_h2g = f"Helsinki-NLP/opus-mt-{"synthetic-en" if lang_guest == "ka" else lang_hotel}-{lang_guest}"
+    model_name_g2h = f"Helsinki-NLP/opus-mt-{"synthetic-en" if lang_hotel == "ka" else lang_guest}-{lang_hotel}"
 
     tokenizer_hotel = AutoTokenizer.from_pretrained(model_name_h2g)
     model_hotel = AutoModelForSeq2SeqLM.from_pretrained(model_name_h2g)
