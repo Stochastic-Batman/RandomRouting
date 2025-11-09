@@ -1,5 +1,8 @@
+fastapi
 hf_xet  # Recommended UserWarning
+pydantic
 sacremoses  # Recommended UserWarning
 sentencepiece
 torch
 transformers
+uvicorn
