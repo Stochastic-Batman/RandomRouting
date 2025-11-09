@@ -25,7 +25,9 @@ def create_database():
                 category TEXT NOT NULL,
                 item TEXT NOT NULL,
                 description TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                owner_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (owner_id) REFERENCES customers(customer_id)
             )
         """)
 
@@ -151,7 +153,7 @@ def customers_delete_many(where_clause: str, params: tuple):
         con.commit()
 
 
-def products_insert_one(name: str, price: float, stock_quantity: int = 1, latitude: float = None, longitude: float = None, category: str = None, item: str = None, description: str = None):
+def products_insert_one(name: str, price: float, stock_quantity: int = 1, latitude: float = None, longitude: float = None, category: str = None, item: str = None, description: str = None, owner_id: int = None):
     with sqlite3.connect("store.db") as con:
         cur = con.cursor()
 
@@ -173,16 +175,19 @@ def products_insert_one(name: str, price: float, stock_quantity: int = 1, latitu
         if item is None:
             print("item must NOT be None!")
             return
+        if owner_id is None:
+            print("owner_id must NOT be None!")
+            return
 
-        cur.execute("INSERT INTO products (name, price, stock_quantity, latitude, longitude, category, item, description) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (name, price, stock_quantity, latitude, longitude, category, item, description))
+        cur.execute("INSERT INTO products (name, price, stock_quantity, latitude, longitude, category, item, description, owner_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", (name, price, stock_quantity, latitude, longitude, category, item, description, owner_id))
         con.commit()
 
 
-def products_insert_many(product_list: list[tuple[str, float, int, float, float, str, str, str]]):
+def products_insert_many(product_list: list[tuple[str, float, int, float, float, str, str, str, int]]):
     with sqlite3.connect("store.db") as con:
         cur = con.cursor()
 
-        for i, (name, price, stock_quantity, latitude, longitude, category, item, description) in enumerate(product_list):
+        for i, (name, price, stock_quantity, latitude, longitude, category, item, description, owner_id) in enumerate(product_list):
             if name is None:
                 print(f"{i}: name must NOT be None!")
                 return
@@ -201,8 +206,11 @@ def products_insert_many(product_list: list[tuple[str, float, int, float, float,
             if item is None:
                 print(f"{i}: item must NOT be None!")
                 return
+            if owner_id is None:
+                print(f"{i}: owner_id must NOT be None!")
+                return
 
-        cur.executemany("INSERT INTO products (name, price, stock_quantity, latitude, longitude, category, item, description) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", product_list)
+        cur.executemany("INSERT INTO products (name, price, stock_quantity, latitude, longitude, category, item, description, owner_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", product_list)
         con.commit()
 
 
@@ -224,7 +232,28 @@ def products_get_many(where_clause: str = None, params: tuple = None):
         return cur.fetchall()
 
 
-def products_update_one(product_id: int, name: str = None, price: float = None, stock_quantity: int = None, latitude: float = None, longitude: float = None, category: str = None, item: str = None, description: str = None):
+def products_get_listing():
+    with sqlite3.connect("store.db") as con:
+        cur = con.cursor()
+        cur.execute("""
+            SELECT 
+                p.name,
+                c.name as seller,
+                c.phone as seller_phone,
+                p.price,
+                p.stock_quantity,
+                p.latitude,
+                p.longitude,
+                p.category,
+                p.item,
+                p.description
+            FROM products p
+            JOIN customers c ON p.owner_id = c.customer_id
+        """)
+        return cur.fetchall()
+
+
+def products_update_one(product_id: int, name: str = None, price: float = None, stock_quantity: int = None, latitude: float = None, longitude: float = None, category: str = None, item: str = None, description: str = None, owner_id: int = None):
     with sqlite3.connect("store.db") as con:
         cur = con.cursor()
 
@@ -255,6 +284,9 @@ def products_update_one(product_id: int, name: str = None, price: float = None, 
         if description is not None:
             updates.append("description = ?")
             params.append(description)
+        if owner_id is not None:
+            updates.append("owner_id = ?")
+            params.append(owner_id)
 
         if not updates:
             print("No fields to update!")
@@ -266,7 +298,7 @@ def products_update_one(product_id: int, name: str = None, price: float = None, 
         con.commit()
 
 
-def products_update_many(where_clause: str, params: tuple, name: str = None, price: float = None, stock_quantity: int = None, latitude: float = None, longitude: float = None, category: str = None, item: str = None, description: str = None):
+def products_update_many(where_clause: str, params: tuple, name: str = None, price: float = None, stock_quantity: int = None, latitude: float = None, longitude: float = None, category: str = None, item: str = None, description: str = None, owner_id: int = None):
     with sqlite3.connect("store.db") as con:
         cur = con.cursor()
 
@@ -297,6 +329,9 @@ def products_update_many(where_clause: str, params: tuple, name: str = None, pri
         if description is not None:
             updates.append("description = ?")
             update_params.append(description)
+        if owner_id is not None:
+            updates.append("owner_id = ?")
+            update_params.append(owner_id)
 
         if not updates:
             print("No fields to update!")

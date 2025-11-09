@@ -34,6 +34,7 @@ class ProductCreate(BaseModel):
     longitude: float
     category: str
     item: str
+    owner_id: int
     description: Optional[str] = None
 
 
@@ -111,7 +112,8 @@ def create_product(product: ProductCreate):
             product.longitude,
             product.category,
             product.item,
-            product.description
+            product.description,
+            product.owner_id
         )
         return {"message": "Product created successfully"}
     except Exception as e:
@@ -133,6 +135,26 @@ def get_product(product_id: int):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
+
+
+@app.get("/products-listing")
+def get_products_for_listing():
+    products = products_get_listing()
+    result = []
+    for product in products:
+        result.append({
+            "name": product[0],
+            "seller": product[1],
+            "seller_phone": product[2],
+            "price": product[3],
+            "stock_quantity": product[4],
+            "latitude": product[5],
+            "longitude": product[6],
+            "category": product[7],
+            "item": product[8],
+            "description": product[9]
+        })
+    return {"products": result}
 
 
 @app.put("/products/{product_id}")
